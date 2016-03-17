@@ -1,0 +1,15 @@
+Lead_Name;System.String
+Company;System.String
+Phone;System.String
+Email;System.String
+FU;System.Boolean
+PFU;System.Boolean
+P1;System.Boolean
+P2;System.Boolean
+P3;System.Boolean
+Cold;System.Boolean
+Lost;System.Boolean
+Closed;System.Boolean
+Owner;System.String
+Generation_Date;System.String
+Next_Follow_Up;System.String
