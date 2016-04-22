@@ -37,8 +37,7 @@ namespace Leads_Generator
                 string to_append = string.Empty;
                 if (cell.OwningColumn.Name == this.ColoredColumn)
                 {
-                    string bcolor = cell.Style.BackColor.R.ToString() + "," + cell.Style.BackColor.G.ToString() + "," + cell.Style.BackColor.B.ToString();
-                    //string fcolor = cell.Style.ForeColor.R.ToString() + "," + cell.Style.ForeColor.G.ToString() + "," + cell.Style.ForeColor.B.ToString();
+                    string bcolor = cell.Style.BackColor.A.ToString() + "," + cell.Style.BackColor.R.ToString() + "," + cell.Style.BackColor.G.ToString() + "," + cell.Style.BackColor.B.ToString();
                     to_append = string.Format("<cell bcolor=\"{0}\">", bcolor);
                 }
                 else

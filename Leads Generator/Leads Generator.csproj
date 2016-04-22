@@ -13,7 +13,7 @@
     <FileAlignment>512</FileAlignment>
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <NuGetPackageImportStamp>4d532b62</NuGetPackageImportStamp>
-    <PublishUrl>F:\programming\O-Desk Projects\Recent\Gopu\Leads Generation\Versions\V 2.1\</PublishUrl>
+    <PublishUrl>F:\programming\O-Desk Projects\Recent\Gopu\Leads Generation\Versions\V2.4\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
     <UpdateEnabled>false</UpdateEnabled>
@@ -23,7 +23,7 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>5</ApplicationRevision>
+    <ApplicationRevision>9</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -61,11 +61,15 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CloseBarWin10">
+      <HintPath>..\..\CloseBarWin10\CloseBarWin10\bin\Debug\CloseBarWin10.dll</HintPath>
+    </Reference>
     <Reference Include="EPPlus, Version=4.0.5.0, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
       <HintPath>..\packages\EPPlus.4.0.5\lib\net20\EPPlus.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Essentials">
+    <Reference Include="Essentials, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\Visual Studio 2012\Projects\Essentials\Essentials\bin\Debug\Essentials.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -74,6 +78,7 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
+    <Reference Include="System.Design" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
@@ -145,6 +150,19 @@
     <Content Include="Files\ReportStateCriteria.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="Resources\email4.png" />
+    <None Include="Resources\email3.png" />
+    <None Include="Resources\none1.png" />
+    <None Include="Resources\sample2.png" />
+    <None Include="Resources\email2.png" />
+    <None Include="Resources\call2.png" />
+    <None Include="Resources\none.png" />
+    <None Include="Resources\sample1.png" />
+    <None Include="Resources\call1.png" />
+    <None Include="Resources\email1.png" />
+    <None Include="Resources\sample.png" />
+    <None Include="Resources\email.png" />
+    <None Include="Resources\call.png" />
     <None Include="Resources\report_40.png" />
     <None Include="Resources\lead_40.png" />
     <None Include="Resources\alarm_40.png" />

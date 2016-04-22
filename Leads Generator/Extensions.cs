@@ -64,10 +64,11 @@ namespace Leads_Generator
 
         public static Color ToColor(this string x) { 
             string[] rgb= x.Split(',');
-            int r = int.Parse(rgb[0]);
-            int g = int.Parse(rgb[1]);
-            int b = int.Parse(rgb[2]);
-            return Color.FromArgb(r,g,b);
+            int a = int.Parse(rgb[0]);
+            int r = int.Parse(rgb[1]);
+            int g = int.Parse(rgb[2]);
+            int b = int.Parse(rgb[3]);
+            return Color.FromArgb(a,r,g,b);
         } 
     }
 }

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Xml;
 using OfficeOpenXml;
 using System.Drawing;
+using Essentials;
 
 namespace Leads_Generator
 {
@@ -26,7 +27,7 @@ namespace Leads_Generator
         const string REMINDER_NOTSET = "N/A";
         const string XML_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
-        private Color[] ColoringThemes = new Color[] { Color.Red, Color.Orange, Color.Yellow}; // Call , Email , Sample
+        private Color[] ColoringThemes = new Color[] { Color.FromArgb(216,0,39), Color.LightGreen, Color.FromArgb(75, 150, 242) }; // Call , Email , Sample
         #endregion
 
          
@@ -101,32 +102,20 @@ namespace Leads_Generator
                     XmlNodeList rows = doc.GetElementsByTagName("row");
                     foreach (XmlNode row in rows)
                     {
-                        //bool colorize = false;
-                        //string bcolor = "";
-                        XmlNodeList cells = row.ChildNodes;
-                        string[] values = new string[cells.Count];
-                        
-                        for (int i = 0; i < cells.Count; i++)
-                        {
-                            //if (cells[i].Attributes.Count != 0)
-                            //{
-                            //    bcolor = "<" + cells[i].Attributes[0].InnerText + ">";
-                            //    colorize = true;
-                            //}
-                            values[i] = cells[i].InnerText;
+                        dgv.Rows.Add();
+
+                        XmlNodeList xml_cells = row.ChildNodes;
+                        for (int i = 0; i < xml_cells.Count; i++)
+                        {    
+                            XmlNode xml_cell = xml_cells[i];
+                            DataGridViewCell dgv_cell = dgv.Rows[dgv.Rows.Count - 1].Cells[i];
+                            dgv_cell.Value = xml_cell.InnerText;
+                            
+                            if (xml_cell.Attributes.Count != 0)
+                            {
+                                dgv_cell.Style.BackColor = xml_cell.Attributes[0].InnerText.ToColor();
+                            }
                         }
-                        dgv_leads.Rows.Add(values);
-                        //if (colorize)
-                        //{
-                        //    bcolor = bcolor.Replace("<","");
-                        //    bcolor = bcolor.Replace(">","");
-                        //    if (dgv_leads.Columns.Contains(lbl_reminderCirteria.Text))
-                        //    {
-                        //        dgv_leads.Rows[dgv_leads.Rows.Count - 1].Cells[lbl_reminderCirteria.Text].Style.BackColor = bcolor.ToColor();   
-
-                        //    }
-                        //}
-
                     }
                 }
             }
@@ -139,9 +128,21 @@ namespace Leads_Generator
                 foreach (string data_line in data_lines)
                 {
                     string[] records = data_line.Split(',');
-                    if (records.Length > 0)
+                    if (records.Length == dgv_leads.Rows.Count)
                     {
-                        dgv.Rows.Add(records);
+                        DataGridViewRow row = new DataGridViewRow();
+                        foreach (string item in records)
+                        {
+                            DataGridViewTextBoxCell cell = new DataGridViewTextBoxCell();
+                            cell.Value = (!string.IsNullOrWhiteSpace(item)) ? item : "N/A";
+                            row.Cells.Add(cell);
+                        }
+                        dgv.Rows.Add(row);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Please Check The Imported File And Make Sure It Matches The Current Schema!", "Schema MisMatch",MessageBoxButtons.OK,MessageBoxIcon.Error);
+                        break;
                     }
                 }
             }
@@ -423,10 +424,10 @@ namespace Leads_Generator
 
 
         /*                          Export */
-        private string DatagridViewToCSV() {
+        private string DatagridViewToCSV(DataGridView dgv) {
             StringBuilder output = new StringBuilder();
             //Add columns
-            foreach (DataGridViewColumn col in dgv_leads.Columns)
+            foreach (DataGridViewColumn col in dgv.Columns)
             {
                 output.Append(col.Name + ",");
             }
@@ -434,7 +435,7 @@ namespace Leads_Generator
             output.AppendLine();
 
             //AddRows
-            foreach (DataGridViewRow row in dgv_leads.Rows)
+            foreach (DataGridViewRow row in dgv.Rows)
             {
                 string roww = "";
                 foreach (DataGridViewCell cell in row.Cells)
@@ -452,21 +453,24 @@ namespace Leads_Generator
             }
             return output.ToString();
         }
-        private void ExportCSV() {
-            string filename = Essentials.Essentials.SaveFileDialogResult(Essentials.Essentials.Filters.CSV);
-            if (filename != null)
+        private void ExportCSV(DataGridView dgv) {
+            string filename = EssentialMethods.SaveFileDialogResult(EssentialMethods.Filters.CSV);
+            if (filename != null && dgv != null)
             {
                 //Save
-                File.WriteAllText(filename,DatagridViewToCSV());
+                File.WriteAllText(filename,DatagridViewToCSV(dgv));
             }
         }
-        private void ExportExcel() {
-            string file_name = Essentials.Essentials.SaveFileDialogResult(Essentials.Essentials.Filters.Excelfiles);
-            using (ExcelPackage package = new ExcelPackage(new FileInfo(file_name)))
+        private void ExportExcel(DataGridView dgv) {
+            string file_name = EssentialMethods.SaveFileDialogResult(EssentialMethods.Filters.Excelfiles);
+            if (file_name != null && dgv != null)
             {
-                ExcelWorksheet worksheet = package.Workbook.Worksheets.Add(Path.GetFileNameWithoutExtension(file_name));
-                worksheet.Cells["A1"].LoadFromText(DatagridViewToCSV(), new ExcelTextFormat() { Delimiter = ',', EOL = "\r\n" }, OfficeOpenXml.Table.TableStyles.Medium27, true);
-                package.Save();
+                using (ExcelPackage package = new ExcelPackage(new FileInfo(file_name)))
+                {
+                    ExcelWorksheet worksheet = package.Workbook.Worksheets.Add(Path.GetFileNameWithoutExtension(file_name));
+                    worksheet.Cells["A1"].LoadFromText(DatagridViewToCSV(dgv), new ExcelTextFormat() { Delimiter = ',', EOL = "\r\n" }, OfficeOpenXml.Table.TableStyles.Medium27, true);
+                    package.Save();
+                }
             }
         }
         #endregion
@@ -495,7 +499,7 @@ namespace Leads_Generator
         }
         private void btn_importLeads_Click(object sender, EventArgs e)
         {
-            string filename = Essentials.Essentials.OpenFileDialogResult(Essentials.Essentials.Filters.CSV);
+            string filename = EssentialMethods.OpenFileDialogResult(EssentialMethods.Filters.CSV);
             Import_LeadsOnly(filename,dgv_leads);
             if (lbl_reminderCirteria.Text != REMINDER_NOTSET)
             {
@@ -560,7 +564,7 @@ namespace Leads_Generator
         /* remove column */
         private void cbox_columnNames_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (Essentials.Essentials.ConfirmSave("Are you sure you want to delete that table!", "CRITICAL"))
+            if (EssentialMethods.ConfirmSave("Are you sure you want to delete that table!", "CRITICAL"))
             {
                 dgv_leads.Columns.Remove(cbox_columnNames.SelectedItem.ToString());
                 SetReminderCriteria();
@@ -607,11 +611,16 @@ namespace Leads_Generator
             }
            
         }
-        private void rbtn_coloring_CheckedChanged(object sender, EventArgs e)
+
+        private void chkbx_coldLeads_CheckedChanged(object sender, EventArgs e)
         {
-            flp_coloring.BringToFront();
+           dgv_leads.Columns["Cold"].Visible = chkbx_coldLeads.Checked;
         }
-        
+
+        private void chkbx_lstleads_CheckedChanged(object sender, EventArgs e)
+        {
+            dgv_leads.Columns["Lost"].Visible = chkbx_lstleads.Checked;
+        }
         // --------------------------- Report Page -----------------------
         private void cbox_reportDateCriteria_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -650,38 +659,53 @@ namespace Leads_Generator
         //--------------------------- Export -----------------------
         private void btn_exportExcel_Click(object sender, EventArgs e)
         {
-            ExportExcel();
+            ExportExcel(dgv_leads);
         }
         private void btn_exportCSV_Click(object sender, EventArgs e)
         {
-            ExportCSV();
+            ExportCSV(dgv_leads);
         }
 
         //--------------------------- Coloring -----------------------
         private void colorize_email_Click(object sender, EventArgs e)
         {
-            Coloring.Colorize(dgv_leads.SelectedCells[0], Coloring.FollowUpMethod.Email, ColoringThemes, true);
+            Coloring.Colorize(dgv_leads.SelectedCells, Coloring.FollowUpMethod.Email, ColoringThemes);
         }
         private void colorize_call_Click(object sender, EventArgs e)
         {
-            Coloring.Colorize(dgv_leads.SelectedCells[0], Coloring.FollowUpMethod.Call, ColoringThemes, true);
+            Coloring.Colorize(dgv_leads.SelectedCells, Coloring.FollowUpMethod.Call, ColoringThemes );
         }
 
         private void colorize_sample_Click(object sender, EventArgs e)
         {
-            Coloring.Colorize(dgv_leads.SelectedCells[0], Coloring.FollowUpMethod.Sample, ColoringThemes, true);
+            Coloring.Colorize(dgv_leads.SelectedCells, Coloring.FollowUpMethod.Sample, ColoringThemes);
         }
 
         private void colorize_none_Click(object sender, EventArgs e)
         {
-            Coloring.Colorize(dgv_leads.SelectedCells[0], Coloring.FollowUpMethod.None, ColoringThemes, true);
+            Coloring.Colorize(dgv_leads.SelectedCells, Coloring.FollowUpMethod.None, ColoringThemes);
         }
 
 
         //--------------------------- Others -----------------------
         private void MainWindow_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Export_DGV(PATH_SCHEMA, PATH_LEADS, dgv_leads);
+            
+        }
+        private void MainWindow_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (lbl_reminderCirteria.Text == REMINDER_NOTSET)
+            {
+                if (EssentialMethods.ConfirmSave("The [ Reminder Criteria ] hasn't been set yet, Your Settings may be lost.\r\nAre You Sure You Want To Exit ?", "Confirm Exit"))
+                {
+                    Export_DGV(PATH_SCHEMA, PATH_LEADS, dgv_leads);
+                    e.Cancel = false;
+                }
+                else
+                {
+                    e.Cancel = true;
+                }
+            }
         }
         private void table_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
@@ -712,12 +736,28 @@ namespace Leads_Generator
         {
 
         }
+        private void btn_exportExcelReminder_Click(object sender, EventArgs e)
+        {
+            ExportExcel(dgv_reminder);
+        }
 
-      
+        private void btn_exportCSVReminder_Click(object sender, EventArgs e)
+        {
+            ExportCSV(dgv_reminder);
+        }
+
+        private void btn_exportExcelReport_Click(object sender, EventArgs e)
+        {
+            ExportExcel(dgv_report);
+        }
+
+        private void btn_exportCSVReport_Click(object sender, EventArgs e)
+        {
+            ExportCSV(dgv_report);
+        }
 
         #endregion
 
-    
        
     }
 
@@ -813,7 +853,7 @@ namespace Leads_Generator
             Sample,
             None
         }
-        public static void Colorize(DataGridViewCell cell,FollowUpMethod method,Color[] theme,bool backColor) {
+        public static void Colorize(DataGridViewSelectedCellCollection cells,FollowUpMethod method,Color[] theme) {
             Color color_to_use = new Color();
             switch (method)
             {
@@ -833,13 +873,9 @@ namespace Leads_Generator
                     color_to_use = Color.White;
                     break;
             }
-            if (backColor)
+            foreach (DataGridViewCell cell in cells)
             {
                 cell.Style.BackColor = color_to_use;
-            }
-            else
-            {
-                cell.Style.ForeColor = color_to_use;
             }
         }
     }
@@ -1147,7 +1183,7 @@ namespace Leads_Generator
 //}
 //private void RemoveColumnSQL() {
 //    string sql = "ALTER TABLE MainTable DROP COLUMN " + cbox_columnNames.SelectedItem.ToString();
-//    if (Essentials.Essentials.ConfirmSave("Are you sure you want to delete that table!", "CRITICAL"))
+//    if (EssentialMethods.ConfirmSave("Are you sure you want to delete that table!", "CRITICAL"))
 //    {
 //        ExecuteSQL(sql);
 //    }
